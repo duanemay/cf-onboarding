@@ -40,17 +40,26 @@ Go through the **Basic BOSH Knowledge** story to gain familiarity with BOSH, spe
 
 ### How?
 0. Bosh ssh onto a Diego Cell
-0. Download ruby and the NATS gem
+0. Download and install the NATS CLI
     ```
-    apt-get install -y ruby ruby-dev
-    gem install nats
+    wget https://github.com/nats-io/natscli/releases/download/v0.0.32/nats-0.0.32-linux-amd64.zip
+    unzip nats-0.0.32-linux-amd64.zip
+    chmod +x nats-0.0.32-linux-amd64
+    sudo mv nats-0.0.32-linux-amd64/nats /usr/bin
     ```
-0. Get the NATS username, password, and server address
+
+0. Get the NATS username, password, and server address and cert files
     ```
     cat /var/vcap/jobs/route_emitter/config/route_emitter.json | jq . | grep nats
     ```
 0. Use the nats gem to connect to nats:
-```nats-sub "*.*" -s nats://NATS_USERNAME:NATS_PASSWORD@NATS_ADDRESS```
+    ```
+    nats sub "*.*" \
+       -s nats://NATS_USERNAME:NATS_PASSWORD@NATS_ADDRESS \
+       --tlsca NATS_CA_CERT_FILE \
+       --tlscert NATS_CLIENT_CERT_FILE \
+       --tlskey NATS_CLIENT_KEY_FILE
+    ```
 
  The Route Emitter registers routes every 20 seconds (by default) so that the GoRouter (which subscribes to these messages) has the most up-to-date information about which IPs map to which apps and routes. Depending on how many routes there are, this might be a lot of information.
 
